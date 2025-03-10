@@ -5,7 +5,7 @@ import javax.imageio.ImageIO;
 import java.io.IOException;
 
 public class ImageProcessor {
-    private int[][][] pixels; // 3D array to store RGBA values
+    private int[][][] pixels;
     private char[][] asciiPixels;
     private int width;
     private int height;
@@ -16,12 +16,12 @@ public class ImageProcessor {
         BufferedImage image = ImageIO.read(new File(imagePath));
         this.width = image.getWidth();
         this.height = image.getHeight();
-        pixels = new int[height][width][4]; // Include alpha channel
+        pixels = new int[height][width][4];
         asciiPixels = new char[height][width];
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                Color color = new Color(image.getRGB(x, y), true); // Preserve alpha channel
+                Color color = new Color(image.getRGB(x, y), true);
                 pixels[y][x][0] = color.getRed();
                 pixels[y][x][1] = color.getGreen();
                 pixels[y][x][2] = color.getBlue();
@@ -77,9 +77,13 @@ public class ImageProcessor {
     public void convertToAscii() {
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
-                int grey = pixels[y][x][0];
-                int index = grey / 32; // Split into 8 categories (0-255 range / 8 levels)
-                asciiPixels[y][x] = ASCII_CHARS[index];
+                if (pixels[y][x][3] == 0) { // Check transparency
+                    asciiPixels[y][x] = ' ';
+                } else {
+                    int grey = pixels[y][x][0];
+                    int index = grey / 32; // Split into 8 categories (0-255 range / 8 levels)
+                    asciiPixels[y][x] = ASCII_CHARS[index];
+                }
             }
         }
     }
@@ -118,7 +122,8 @@ public class ImageProcessor {
             processor.convertToAscii();
             processor.printAsciiArt();
             processor.saveImage("output.jpg");
-            System.out.println("Greyscale, reduced-resolution image saved as output.jpg");
+            System.out.println("Greyscale, reduced-resolution image saved as output.png");
+
         } catch (IOException e) {
             System.err.println("Error processing image: " + e.getMessage());
         }
