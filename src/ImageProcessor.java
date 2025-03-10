@@ -6,14 +6,18 @@ import java.io.IOException;
 
 public class ImageProcessor {
     private int[][][] pixels; // 3D array to store RGB values
+    private char[][] asciiPixels;
     private int width;
     private int height;
+
+    private static final char[] ASCII_CHARS = {'@', '#', '%', '+', '=', '-', '.', ' '};
 
     public ImageProcessor(String imagePath) throws IOException {
         BufferedImage image = ImageIO.read(new File(imagePath));
         this.width = image.getWidth();
         this.height = image.getHeight();
         pixels = new int[height][width][3];
+        asciiPixels = new char[height][width];
 
         for (int y = 0; y < height; y++) {
             for (int x = 0; x < width; x++) {
@@ -67,6 +71,25 @@ public class ImageProcessor {
         this.height = newHeight;
     }
 
+    public void convertToAscii() {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                int grey = pixels[y][x][0];
+                int index = grey / 32; // Split into 8 categories (0-255 range / 8 levels)
+                asciiPixels[y][x] = ASCII_CHARS[index];
+            }
+        }
+    }
+
+    public void printAsciiArt() {
+        for (int y = 0; y < height; y++) {
+            for (int x = 0; x < width; x++) {
+                System.out.print(asciiPixels[y][x]);
+            }
+            System.out.println();
+        }
+    }
+
     public void saveImage(String outputPath) throws IOException {
         BufferedImage outputImage = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
 
@@ -82,14 +105,17 @@ public class ImageProcessor {
 
     public static void main(String[] args) {
         try {
-            ImageProcessor processor = new ImageProcessor("C:\\Users\\buddy\\Desktop\\CSC210\\pixelator_\\src\\input.jpg");
+            ImageProcessor processor = new ImageProcessor("C:\\Users\\buddy\\Desktop\\CS-Projects\\pixelator_\\out\\production\\pixelator_\\input.jpg");
             processor.applyGreyscale();
             processor.reduceResolution();
             processor.reduceResolution();
             processor.reduceResolution();
-            processor.reduceResolution();
+
+            processor.convertToAscii();
+            processor.printAsciiArt();
+
             processor.saveImage("output.jpg");
-            System.out.println("Greyscale and reduced-resolution image saved as output.jpg");
+            System.out.println("Greyscale, reduced-resolution image saved as output.jpg");
         } catch (IOException e) {
             System.err.println("Error processing image: " + e.getMessage());
         }
